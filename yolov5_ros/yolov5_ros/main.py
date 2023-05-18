@@ -187,8 +187,8 @@ class yolov5_ros(Node):
 
         self.pub_bbox = self.create_publisher(BoundingBoxes, 'yolov5/bounding_boxes', 10)
         self.pub_image = self.create_publisher(Image, 'yolov5/image_raw', 10)
-
-        self.sub_image = self.create_subscription(Image, 'image_raw', self.image_callback,10)
+        self.declare_parameter('image_topic', 'image_raw')
+        self.sub_image = self.create_subscription(Image, self.get_parameter('image_topic').value, self.image_callback,10)
 
         # parameter
         FILE = Path(__file__).resolve()
@@ -197,6 +197,7 @@ class yolov5_ros(Node):
             sys.path.append(str(ROOT))  # add ROOT to PATH
         ROOT = Path(os.path.relpath(ROOT, Path.cwd()))
 
+        
         self.declare_parameter('weights', str(ROOT) + '/config/yolov5s.pt')
         self.declare_parameter('data', str(ROOT) + '/data/coco128.yaml')
         self.declare_parameter('imagez_height', 640)
@@ -212,8 +213,14 @@ class yolov5_ros(Node):
         self.declare_parameter('half', False)
         self.declare_parameter('dnn', False)
 
-        self.weights = self.get_parameter('weights').value
-        self.data = self.get_parameter('data').value
+        if((self.get_parameter('weights').value) == ""):
+            self.weights = str(ROOT) + '/config/yolov5s.pt'
+        else:
+            self.weights = self.get_parameter('weights').value
+        if((self.get_parameter('data').value) == ""):
+             self.data = str(ROOT) + '/data/coco128.yaml'
+        else:     
+            self.data = self.get_parameter('data').value
         self.imagez_height = self.get_parameter('imagez_height').value
         self.imagez_width = self.get_parameter('imagez_width').value
         self.conf_thres = self.get_parameter('conf_thres').value
@@ -221,7 +228,7 @@ class yolov5_ros(Node):
         self.max_det = self.get_parameter('max_det').value
         self.device = self.get_parameter('device').value
         self.view_img = self.get_parameter('view_img').value
-        self.classes = self.get_parameter('classes').value
+        self.classes =  self.get_parameter('classes').value
         self.agnostic_nms = self.get_parameter('agnostic_nms').value
         self.line_thickness = self.get_parameter('line_thickness').value
         self.half = self.get_parameter('half').value
